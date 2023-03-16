@@ -16,7 +16,7 @@ extension View {
 }
 
 struct ContentView: View {
-    @State private var cards = Array<Card>(repeating: Card.example, count: 10)
+    @State private var cards = [Card]()
     
     @Environment(\.accessibilityDifferentiateWithoutColor) var differentiateWithoutColor
     @Environment(\.scenePhase) var scenePhase
@@ -68,7 +68,7 @@ struct ContentView: View {
             VStack {
                 HStack {
                     Spacer()
-
+                    
                     Button {
                         showingEditScreen = true
                     } label: {
@@ -78,7 +78,7 @@ struct ContentView: View {
                             .clipShape(Circle())
                     }
                 }
-
+                
                 Spacer()
             }
             .foregroundColor(.white)
@@ -96,11 +96,11 @@ struct ContentView: View {
                             }
                         } label: {
                             
-                       
-                        Image(systemName: "xmark.circle")
-                            .padding()
-                            .background(.black.opacity(0.7))
-                            .clipShape(Circle())
+                            
+                            Image(systemName: "xmark.circle")
+                                .padding()
+                                .background(.black.opacity(0.7))
+                                .clipShape(Circle())
                         }
                         .accessibilityLabel("Wrong")
                         .accessibilityHint("Mark your answer as being incorrect")
@@ -112,12 +112,12 @@ struct ContentView: View {
                             }
                         } label: {
                             
-                      
-                        Image(systemName: "checkmark.circle")
-                            .padding()
-                            .background(.black.opacity(0.7))
-                            .clipShape(Circle())
-                    }
+                            
+                            Image(systemName: "checkmark.circle")
+                                .padding()
+                                .background(.black.opacity(0.7))
+                                .clipShape(Circle())
+                        }
                         .accessibilityLabel("Correct")
                         .accessibilityHint("Mark your answer as being correct")
                     }
@@ -144,6 +144,17 @@ struct ContentView: View {
                 isActive = false
             }
         }
+        .sheet(isPresented: $showingEditScreen, onDismiss: resetCards, content: EditCards.init)
+        
+        .onAppear(perform: resetCards)
+    }
+    
+    func loadData() {
+        if let data = UserDefaults.standard.data(forKey: "Cards") {
+            if let decoded = try? JSONDecoder().decode([Card].self, from: data) {
+                cards = decoded
+            }
+        }
     }
     
     func removeCard(at index: Int) {
@@ -156,9 +167,9 @@ struct ContentView: View {
     }
     
     func resetCards() {
-        cards = Array(repeating: Card.example, count: 10)
         timeRemaining = 100
         isActive = true
+        loadData()
     }
 }
 
