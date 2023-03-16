@@ -20,6 +20,7 @@ struct ContentView: View {
     
     @Environment(\.accessibilityDifferentiateWithoutColor) var differentiateWithoutColor
     @Environment(\.scenePhase) var scenePhase
+    @Environment(\.accessibilityVoiceOverEnabled) var voiceOverEnabled
     
     @State private var timeRemaining = 100
     @State private var isActive = true
@@ -63,20 +64,41 @@ struct ContentView: View {
                 }
             }
             
-            if differentiateWithoutColor {
+            if differentiateWithoutColor || voiceOverEnabled {
                 VStack {
                     Spacer()
                     
                     HStack {
+                        Button {
+                            withAnimation {
+                                removeCard(at: cards.count - 1)
+                            }
+                        } label: {
+                            
+                       
                         Image(systemName: "xmark.circle")
                             .padding()
                             .background(.black.opacity(0.7))
                             .clipShape(Circle())
+                        }
+                        .accessibilityLabel("Wrong")
+                        .accessibilityHint("Mark your answer as being incorrect")
                         Spacer()
+                        
+                        Button {
+                            withAnimation {
+                                removeCard(at: cards.count - 1)
+                            }
+                        } label: {
+                            
+                      
                         Image(systemName: "checkmark.circle")
                             .padding()
                             .background(.black.opacity(0.7))
                             .clipShape(Circle())
+                    }
+                        .accessibilityLabel("Correct")
+                        .accessibilityHint("Mark your answer as being correct")
                     }
                     .foregroundColor(.white)
                     .font(.largeTitle)
@@ -104,6 +126,7 @@ struct ContentView: View {
     }
     
     func removeCard(at index: Int) {
+        guard index >= 0 else { return }
         cards.remove(at: index)
         
         if cards.isEmpty {
