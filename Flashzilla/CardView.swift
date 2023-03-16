@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+
+
 struct CardView: View {
     let card: Card
     
@@ -33,7 +35,7 @@ struct CardView: View {
                     differentiateWithoutColor
                         ? nil
                         : RoundedRectangle(cornerRadius: 25, style: .continuous)
-                            .fill(offset.width > 0 ? .green : .red)
+                        .fill(RoundedRectangle.swipeColor(offset: offset))
                 )
                 .shadow(radius: 10)
             
