@@ -12,7 +12,8 @@ import SwiftUI
 struct CardView: View {
     let card: Card
     
-    var removal: (() -> Void)? = nil
+    var swipeRight: (() -> Void)? = nil
+    var swipeLeft: (() -> Void)? = nil
     
     @Environment(\.accessibilityDifferentiateWithoutColor) var differentiateWithoutColor
     @Environment(\.accessibilityVoiceOverEnabled) var voiceOverEnabled;
@@ -76,8 +77,12 @@ struct CardView: View {
                     if abs(offset.width) > 100 {
                         if offset.width < 0 {
                             feedback.notificationOccurred(.error)
+                            swipeLeft?()
                         }
-                        removal?()
+                        else if offset.width > 0 {
+                            swipeRight?()
+                        }
+                     
                     } else {
                         offset = .zero
                     }

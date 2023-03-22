@@ -16,7 +16,7 @@ extension View {
 }
 
 struct ContentView: View {
-    @State private var cards = [Card]()
+    @StateObject private var viewModel = ViewModel()
     
     @Environment(\.accessibilityDifferentiateWithoutColor) var differentiateWithoutColor
     @Environment(\.scenePhase) var scenePhase
@@ -43,20 +43,25 @@ struct ContentView: View {
                     .background(.black.opacity(0.75))
                     .clipShape(Capsule())
                 ZStack {
-                    ForEach(0..<cards.count, id: \.self) { index in
-                        CardView(card: cards[index]) {
+                    ForEach(viewModel.cards, id: \.self) { card in
+                        CardView(card: card) {
                             withAnimation {
-                                removeCard(at: index)
+                                removeLastCard()
+                            }
+                        } swipeLeft: {
+                            withAnimation {
+                                removeAndAppend()
                             }
                         }
-                        .stacked(at: index, in: cards.count)
-                        .allowsHitTesting(index == cards.count - 1)
-                        .accessibilityHidden(index < cards.count - 1)
+                        .stacked(at: viewModel.cards.firstIndex(of: card)!, in: viewModel.cards.count)
+                        .allowsHitTesting(viewModel.cards.last == card)
+                        .accessibilityHidden(true)
                     }
+                    
                 }
                 .allowsHitTesting(timeRemaining > 0)
                 
-                if cards.isEmpty {
+                if viewModel.cards.isEmpty {
                     Button("Start Again", action: resetCards)
                         .padding()
                         .background(.white)
@@ -92,11 +97,9 @@ struct ContentView: View {
                     HStack {
                         Button {
                             withAnimation {
-                                removeCard(at: cards.count - 1)
+                                removeLastCard()
                             }
                         } label: {
-                            
-                            
                             Image(systemName: "xmark.circle")
                                 .padding()
                                 .background(.black.opacity(0.7))
@@ -108,7 +111,7 @@ struct ContentView: View {
                         
                         Button {
                             withAnimation {
-                                removeCard(at: cards.count - 1)
+                                removeLastCard()
                             }
                         } label: {
                             
@@ -137,7 +140,7 @@ struct ContentView: View {
         
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active {
-                if cards.isEmpty == false {
+                if viewModel.cards.isEmpty == false {
                     isActive = true
                 }
             } else {
@@ -149,27 +152,29 @@ struct ContentView: View {
         .onAppear(perform: resetCards)
     }
     
-    func loadData() {
-        if let data = UserDefaults.standard.data(forKey: "Cards") {
-            if let decoded = try? JSONDecoder().decode([Card].self, from: data) {
-                cards = decoded
-            }
+    
+    func removeLastCard() {
+        if viewModel.cards.isEmpty {
+            isActive = false
+        } else {
+            viewModel.cards.removeLast()
         }
     }
     
-    func removeCard(at index: Int) {
-        guard index >= 0 else { return }
-        cards.remove(at: index)
-        
-        if cards.isEmpty {
+    func removeAndAppend() {
+        if viewModel.cards.isEmpty {
             isActive = false
+        } else {
+            let card = viewModel.cards.removeLast()
+            
+            viewModel.cards.insert(card, at: viewModel.cards.startIndex)
         }
     }
     
     func resetCards() {
         timeRemaining = 100
         isActive = true
-        loadData()
+        viewModel.loadData()
     }
 }
 
