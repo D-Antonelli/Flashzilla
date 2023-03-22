@@ -7,7 +7,6 @@
 
 import Foundation
 
-extension ContentView  {
     @MainActor class ViewModel: ObservableObject {
         @Published var cards: [Card] = []
 
@@ -19,4 +18,4 @@ extension ContentView  {
             }
         }
     }
-}
+

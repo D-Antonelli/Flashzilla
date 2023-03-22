@@ -14,7 +14,7 @@ struct Card: Codable, Identifiable, Hashable {
     
     static func == (lhs: Card, rhs: Card) -> Bool {
             return lhs.hashValue == rhs.hashValue
-        }
+    }
 
     static let example = Card(prompt: "Who played the 13th Doctor in Doctor Who?", answer: "Jodie Whittaker")
 }

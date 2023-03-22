@@ -9,7 +9,7 @@ import SwiftUI
 
 struct EditCards: View {
     @Environment(\.dismiss) var dismiss
-    @State private var cards = [Card]()
+    @ObservedObject var viewModel: ViewModel
     @State private var newPrompt = ""
     @State private var newAnswer = ""
     
@@ -20,14 +20,15 @@ struct EditCards: View {
                     TextField("Prompt", text: $newPrompt)
                     TextField("Answer", text: $newAnswer)
                     Button("Add card", action: addCard)
+                    Button("Add template", action: addTemplate)
                 }
                 
                 Section {
-                    ForEach(0..<cards.count, id: \.self) { index in
+                    ForEach(0..<viewModel.cards.count, id: \.self) { index in
                         VStack(alignment: .leading) {
-                            Text(cards[index].prompt)
+                            Text(viewModel.cards[index].prompt)
                                 .font(.headline)
-                            Text(cards[index].answer)
+                            Text(viewModel.cards[index].answer)
                                 .foregroundColor(.secondary)
                         }
                     }
@@ -50,7 +51,7 @@ struct EditCards: View {
     func loadData() {
         if let data = UserDefaults.standard.data(forKey: "Cards") {
             if let decoded = try? JSONDecoder().decode([Card].self, from: data) {
-                cards = decoded
+                viewModel.cards = decoded
             }
         }
     }
@@ -62,21 +63,28 @@ struct EditCards: View {
         guard trimmedPrompt.isEmpty == false && trimmedAnswer.isEmpty == false else { return }
         
         let card = Card(prompt: trimmedPrompt, answer: trimmedAnswer)
-        cards.insert(card, at: 0)
+        viewModel.cards.insert(card, at: 0)
         saveData()
         
         newPrompt = ""
         newAnswer = ""
     }
     
+    func addTemplate() {
+        let cards = [Card(prompt: "What is the capital city of France?", answer: "Paris"), Card(prompt: "Which chemical element has the symbol 'Au' on the periodic table?", answer: "Gold"), Card(prompt: "Who is the author of the famous play 'Romeo and Juliet'?", answer: "William Shakespeare"), Card(prompt: "Who was the first woman to win a Nobel Prize?", answer: "Marie Curie")]
+        
+        viewModel.cards = cards
+        saveData()
+    }
+    
     func saveData() {
-        if let data = try? JSONEncoder().encode(cards) {
+        if let data = try? JSONEncoder().encode(viewModel.cards) {
             UserDefaults.standard.set(data, forKey: "Cards")
         }
     }
     
     func removeCards(at offsets: IndexSet) {
-        cards.remove(atOffsets: offsets)
+        viewModel.cards.remove(atOffsets: offsets)
         saveData()
     }
     
@@ -84,6 +92,6 @@ struct EditCards: View {
 
 struct EditCards_Previews: PreviewProvider {
     static var previews: some View {
-        EditCards()
+        EditCards(viewModel: ViewModel())
     }
 }

@@ -43,7 +43,7 @@ struct ContentView: View {
                     .background(.black.opacity(0.75))
                     .clipShape(Capsule())
                 ZStack {
-                    ForEach(viewModel.cards, id: \.self) { card in
+                    ForEach(viewModel.cards) { card in
                         CardView(card: card) {
                             withAnimation {
                                 removeLastCard()
@@ -114,8 +114,7 @@ struct ContentView: View {
                                 removeLastCard()
                             }
                         } label: {
-                            
-                            
+
                             Image(systemName: "checkmark.circle")
                                 .padding()
                                 .background(.black.opacity(0.7))
@@ -147,7 +146,9 @@ struct ContentView: View {
                 isActive = false
             }
         }
-        .sheet(isPresented: $showingEditScreen, onDismiss: resetCards, content: EditCards.init)
+        .sheet(isPresented: $showingEditScreen, onDismiss: resetCards) {
+            EditCards(viewModel: viewModel)
+        }
         
         .onAppear(perform: resetCards)
     }
@@ -162,12 +163,13 @@ struct ContentView: View {
     }
     
     func removeAndAppend() {
+        print("remove and append")
         if viewModel.cards.isEmpty {
             isActive = false
         } else {
-            let card = viewModel.cards.removeLast()
-            
-            viewModel.cards.insert(card, at: viewModel.cards.startIndex)
+            let removed = viewModel.cards.removeLast()
+            let newCard = Card(prompt: removed.prompt, answer: removed.answer)
+            viewModel.cards.insert(newCard, at: viewModel.cards.startIndex)
         }
     }
     
